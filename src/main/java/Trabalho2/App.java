@@ -31,12 +31,18 @@ public class App
         List<String> linhasCodificadas = new ArrayList<String>();
         for(String l:linhas){
             String[] args = l.split(" ");
+            String linhaCodificada;
             int tamanho = args.length;
             String binarioOpcode = opcode.get(args[0]);
             String binarioFuncao = funcao.get(args[0]);
             String tipo = tipos.get(args[0]);
             switch(tipo){
                 case "1":
+
+                    for(int i = 1; i < tamanho; i++){
+                        linhaCodificada = "" + argumentos.get(args[i]);
+
+                    }
                     break;
                 case "2":
                     break;
@@ -51,22 +57,27 @@ public class App
 
     public static void populaTipos(){
         tipos = new HashMap<String,String>();
-        tipos.put("xor", "1");
-        tipos.put("lui", "2");
-        tipos.put("addu", "1");
-        tipos.put("addiu", "2");
-        tipos.put("lw", "2");
-        tipos.put("sw", "2");
-        tipos.put("beq", "2");
-        tipos.put("bne", "2");
-        tipos.put("slt", "1");
-        tipos.put("j", "3");
-        tipos.put("jr", "4");
-        tipos.put("ori", "2");
+        //tipo 1: opcode rs rt rd shamt function
         tipos.put("and", "1");
-        tipos.put("andi", "2");
         tipos.put("sll", "1");
         tipos.put("srl", "1");
+        tipos.put("xor", "1");
+        tipos.put("addu", "1");
+        tipos.put("slt", "1");
+        //tipo 2: opcode rs rt imm
+        tipos.put("lui", "2"); // 2 args - mudar tipo
+        tipos.put("addiu", "2");
+        tipos.put("beq", "2");
+        tipos.put("bne", "2");
+        tipos.put("ori", "2");
+        tipos.put("andi", "2");
+        tipos.put("j", "3");
+        tipos.put("jr", "4");
+
+        //tipo 4: opcode rs rt Offset
+        tipos.put("lw", "4");
+        tipos.put("sw", "4");
+               
     }
 
     public static void populaOpcode(){
@@ -111,9 +122,37 @@ public class App
 
     public static void populaArgumentos(){
         argumentos = new HashMap<String,String>();
-        argumentos.put("$zero", "00000");
-        argumentos.put("$at", "00001");
-        argumentos.put("$", "");
+        argumentos.put("zero", "00000");
+        argumentos.put("at", "00001");
+        argumentos.put("v0", "00010");
+        argumentos.put("a0", "00100");
+        argumentos.put("a1", "00101");
+        argumentos.put("a2", "00110");
+        argumentos.put("a3", "00111");
+        argumentos.put("t0", "01000");
+        argumentos.put("t1", "01001");
+        argumentos.put("t2", "01010");
+        argumentos.put("t3", "01011");
+        argumentos.put("t4", "01100");
+        argumentos.put("t5", "01101");
+        argumentos.put("t6", "01110");
+        argumentos.put("t7", "01111");
+        argumentos.put("s0", "10000");
+        argumentos.put("s1", "10001");
+        argumentos.put("s2", "10010");
+        argumentos.put("s3", "10011");
+        argumentos.put("s4", "10100");
+        argumentos.put("s5", "10101");
+        argumentos.put("s6", "10110");
+        argumentos.put("s7", "10111");
+        argumentos.put("t8", "11000");
+        argumentos.put("t9", "11001");
+        argumentos.put("k0", "11010");
+        argumentos.put("k1", "11011");
+        argumentos.put("gp", "11100");
+        argumentos.put("sp", "11101");
+        argumentos.put("fp", "11110");
+        argumentos.put("ra", "11111");
     }
 
     public static List<String> leArquivo(){
