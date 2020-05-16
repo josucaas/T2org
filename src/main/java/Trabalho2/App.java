@@ -22,8 +22,9 @@ public class App
         populaTipos();
         populaOpcode();
         List<String> linhas = leArquivo();
-        for(String s:linhas)
-            System.out.println(s);
+        linhas = codifica(linhas);
+        for(String l:linhas)
+            System.out.println(l);
         escreveArquivo();
     }
 
@@ -31,53 +32,88 @@ public class App
         List<String> linhasCodificadas = new ArrayList<String>();
         for(String l:linhas){
             String[] args = l.split(" ");
-            String linhaCodificada;
+            String linhaCodificada = "";
             int tamanho = args.length;
             String binarioOpcode = opcode.get(args[0]);
+            linhaCodificada += binarioOpcode;
             String binarioFuncao = funcao.get(args[0]);
             String tipo = tipos.get(args[0]);
             switch(tipo){
-                case "1":
-
-                    for(int i = 1; i < tamanho; i++){
-                        linhaCodificada = "" + argumentos.get(args[i]);
-
-                    }
+                case "1": //and $8, $9, $11
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[2])), 5);
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[3])), 5);
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[1])), 5);
+                    linhaCodificada += "00000";
+                    linhaCodificada += binarioFuncao;
                     break;
-                case "2":
+                case "2": //beq $8, $9, 0xfffffffd                    
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[1])), 5);
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[2])), 5);
+                    int offsetDecimal = Long.valueOf(args[3].replace("0x", ""), 16).intValue();
+                    System.out.println(offsetDecimal);
+                    String offsetBinario = complementoDeDois(offsetDecimal);
+                    linhaCodificada += offsetBinario;
                     break;
                 case "3":
                     break;
                 case "4":
                     break;
             }
+            //System.out.println(linhaCodificada);
+            Long linhaCodificadaDecimal = Long.parseLong(linhaCodificada, 2);
+            linhasCodificadas.add("0x" + adicionarZeros(Long.toString(linhaCodificadaDecimal, 16), 8));
         } 
         return linhasCodificadas;
+    }
+
+    //transforma o inteiro NEGATIVO em um binario de 5 digitos :o
+    public static String complementoDeDois(int s){
+        String binario = adicionarZeros(Integer.toString(s, 2).replace("-", ""), 16);
+        binario = binario.replace("1", " ").replace("0", "1").replace(" ", "0");
+        return Integer.toString(0b01 + Integer.parseInt(binario, 2), 2);
+    }
+
+    public static String adicionarZeros(String s, int tam){
+        for(int i = 0; i < s.length(); i++){
+            if(s.length() < tam)
+                s = "0" + s;
+        }
+        return s;
     }
 
     public static void populaTipos(){
         tipos = new HashMap<String,String>();
         //tipo 1: opcode rs rt rd shamt function
         tipos.put("and", "1");
-        tipos.put("sll", "1");
-        tipos.put("srl", "1");
         tipos.put("xor", "1");
         tipos.put("addu", "1");
         tipos.put("slt", "1");
-        //tipo 2: opcode rs rt imm
-        tipos.put("lui", "2"); // 2 args - mudar tipo
-        tipos.put("addiu", "2");
+        
+        //tipo 2: 4 args - beq rs, rt, label - opcode rs rt imm
+        //tipos.put("addiu", "2"); apenas decodificacao
         tipos.put("beq", "2");
         tipos.put("bne", "2");
-        tipos.put("ori", "2");
-        tipos.put("andi", "2");
+        tipos.put("ori", "2"); // nao funciona nao sei pq
+        //tipos.put("andi", "2"); apenas deco
+
+        //tipo 3: 1 arg - j target - opcode target
         tipos.put("j", "3");
+
+        //tipo 4: 1 arg - jr rs - opcode rs 0 0x8
         tipos.put("jr", "4");
 
-        //tipo 4: opcode rs rt Offset
-        tipos.put("lw", "4");
-        tipos.put("sw", "4");
-               
+
+        //tipo 5: opcode rs rt Offset
+        tipos.put("lw", "5");
+        tipos.put("sw", "5");
+        
+        //tipo 6: 2 args - lui rt, imm - 0xf 0 rt imm
+        tipos.put("lui", "6");
+
+        //tipo 6: 3 args - igual o tipo 1 porem usa o shamt
+        tipos.put("sll", "6");
+        tipos.put("srl", "6");
+
     }
 
     public static void populaOpcode(){
