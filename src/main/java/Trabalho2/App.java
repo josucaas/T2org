@@ -46,31 +46,73 @@ public class App
                     linhaCodificada += "00000";
                     linhaCodificada += binarioFuncao;
                     break;
-                case "2": //beq $8, $9, 0xfffffffd                    
+                case "2": //beq $8, $9, 0xfffffffd        
+                    if(binarioOpcode == "001101"){ //no caso do ori, ele segue a mesma ideia dos tipo 2 porem o valor imm nao pode ser convertido pela funcao complementeDeDois                       
+                        linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[2])), 5);
+                        linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[1])), 5);
+                        int offsetDecimal = Long.valueOf(args[3].replace("0x", ""), 16).intValue();
+                        String offsetBinario = adicionarZeros(Integer.toString(offsetDecimal, 2), 16);
+                        linhaCodificada += offsetBinario;
+                    }
+                    else{
+                        linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[1])), 5);
+                        linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[2])), 5);
+                        int offsetDecimal = Long.valueOf(args[3].replace("0x", ""), 16).intValue();
+                        String offsetBinario = complementoDeDois(offsetDecimal, 16);
+                        linhaCodificada += offsetBinario;
+                    }
+                    break;
+                case "3": // j target
+                    int offsetDecimal = Long.valueOf(args[1].replace("0x", ""), 16).intValue();
+                    String offsetBinario = adicionarZeros(Integer.toString(offsetDecimal, 2), 32);
+                    linhaCodificada += offsetBinario.substring(4, 30); // ignora os primeiros 4 e ultimos 2 bits kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
+                    break;
+                case "4": // jr $31
                     linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[1])), 5);
+                    linhaCodificada += "0000000000000000";
+                    linhaCodificada += binarioFuncao;
+                    break;
+                case "5": // lw $8 0x00000000 $8 
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[3])), 5);
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[1])), 5);
+                    int offsetDecimal1 = Long.valueOf(args[2].replace("0x", ""), 16).intValue();
+                    String offsetBinario1 = adicionarZeros(Integer.toString(offsetDecimal1, 2), 16);
+                    linhaCodificada += offsetBinario1;
+                    break;
+                case "6": // lui $1, 0x00001001
+                    linhaCodificada += "00000";
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[1])), 5);
+                    int offsetDecimal2 = Long.valueOf(args[2].replace("0x", ""), 16).intValue();
+                    String offsetBinario2 = adicionarZeros(Integer.toString(offsetDecimal2, 2), 16);
+                    linhaCodificada += offsetBinario2;
+                    break;
+                case "7": //sll $8, $9, 0x0000000
+                    linhaCodificada += "00000";
                     linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[2])), 5);
-                    int offsetDecimal = Long.valueOf(args[3].replace("0x", ""), 16).intValue();
-                    System.out.println(offsetDecimal);
-                    String offsetBinario = complementoDeDois(offsetDecimal);
-                    linhaCodificada += offsetBinario;
-                    break;
-                case "3":
-                    break;
-                case "4":
-                    break;
+                    linhaCodificada += adicionarZeros(Integer.toBinaryString(Integer.parseInt(args[1])), 5);
+                    int offsetDecimal3 = Long.valueOf(args[3].replace("0x", ""), 16).intValue();
+                    String offsetBinario3 = adicionarZeros(Integer.toString(offsetDecimal3, 2), 5);
+                    linhaCodificada += offsetBinario3;
+                    linhaCodificada += binarioFuncao;
             }
             //System.out.println(linhaCodificada);
             Long linhaCodificadaDecimal = Long.parseLong(linhaCodificada, 2);
-            linhasCodificadas.add("0x" + adicionarZeros(Long.toString(linhaCodificadaDecimal, 16), 8));
+            linhasCodificadas.add("0x" + adicionarZeros(Long.toString(linhaCodificadaDecimal, 16), 8)); //readiciona um zero a esquerda que possa ter sido desconsiderado
+            //linhasCodificadas.add("0x" + Long.toString(linhaCodificadaDecimal, 16));
+
         } 
         return linhasCodificadas;
     }
 
-    //transforma o inteiro NEGATIVO em um binario de 5 digitos :o
-    public static String complementoDeDois(int s){
-        String binario = adicionarZeros(Integer.toString(s, 2).replace("-", ""), 16);
+    //transforma o inteiro NEGATIVO em um binario de n digitos :o
+    public static String complementoDeDois(int s, int n){
+        String binario = adicionarZeros(Integer.toString(s, 2).replace("-", ""), n);
         binario = binario.replace("1", " ").replace("0", "1").replace(" ", "0");
-        return Integer.toString(0b01 + Integer.parseInt(binario, 2), 2);
+        binario = Integer.toString(0b01 + Integer.parseInt(binario, 2), 2);
+        if(binario.length() > 16){ //caso haja overflow descarta o bit mais significativo
+            binario = binario.substring(1);
+        }
+        return adicionarZeros(binario, n); //adiciona zeros novamente caso a operacao de soma tenha desconsideraco zeros à esquerad, precisamos de uma plavra de 16 bits
     }
 
     public static String adicionarZeros(String s, int tam){
@@ -93,7 +135,7 @@ public class App
         //tipos.put("addiu", "2"); apenas decodificacao
         tipos.put("beq", "2");
         tipos.put("bne", "2");
-        tipos.put("ori", "2"); // nao funciona nao sei pq
+        tipos.put("ori", "2");
         //tipos.put("andi", "2"); apenas deco
 
         //tipo 3: 1 arg - j target - opcode target
@@ -111,8 +153,8 @@ public class App
         tipos.put("lui", "6");
 
         //tipo 6: 3 args - igual o tipo 1 porem usa o shamt
-        tipos.put("sll", "6");
-        tipos.put("srl", "6");
+        tipos.put("sll", "7");
+        tipos.put("srl", "7");
 
     }
 
@@ -148,7 +190,7 @@ public class App
         funcao.put("bne", null); // -
         funcao.put("slt", "101010"); //0x2a 42
         funcao.put("j", null);   // -
-        funcao.put("jr", "001000");  // 0x8
+        funcao.put("jr", "01000");  // 0x8
         funcao.put("ori", null); // -
         funcao.put("and", "100100"); //0x24
         funcao.put("andi", null);// -
@@ -198,7 +240,7 @@ public class App
             BufferedReader lerArq = new BufferedReader(arq);
             String linha = lerArq.readLine();         
             while (linha != null) {
-                linhas.add(linha.replace(",", "").replace("$", ""));
+                linhas.add(linha.replace(",", "").replace("$", "").replace("(", " ").replace(")", ""));
                 linha = lerArq.readLine(); 
             }
             arq.close();
