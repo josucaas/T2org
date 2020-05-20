@@ -62,8 +62,8 @@ public class Decodifica extends ConversorMIPS{
             }
             else if(opcodeBinario.equals("001101")){
                 linhaDecodificada += "ori";
-                linhaDecodificada += " $" + Integer.parseInt(linhaBinario.substring(6,11), 2);
-                linhaDecodificada += ", $" + Integer.parseInt(linhaBinario.substring(11,16), 2);
+                linhaDecodificada += " $" + Integer.parseInt(linhaBinario.substring(11,16), 2);
+                linhaDecodificada += ", $" + Integer.parseInt(linhaBinario.substring(6,11), 2);
                 linhaDecodificada += ", 0x" + adicionarZeros(Integer.toString(Integer.parseInt(linhaBinario.substring(16,32), 2), 16), 8);
             }
             else if(opcodeBinario.equals("000010")){
@@ -87,6 +87,9 @@ public class Decodifica extends ConversorMIPS{
             index++;
         }
         //escrever no array
+        linhasDecodificadas.add(0, "main:");
+        linhasDecodificadas.add(0, ".globl main");
+        linhasDecodificadas.add(0, ".text");
         return linhasDecodificadas;
 
     }
@@ -112,6 +115,9 @@ public class Decodifica extends ConversorMIPS{
         String labelString = "Label_" + label;
         label++;
         int posicaoLabel = arrayList.size() + target;
+        if(posicaoLabel < 0){
+            posicaoLabel = 0;
+        }
         if(target > 0){              //maquina do tempo
             for(int i = arrayList.size(); i <= posicaoLabel; i++){
                 arrayList.add("");

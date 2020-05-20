@@ -17,7 +17,7 @@ public class ConversorMIPS {
             BufferedReader lerArq = new BufferedReader(arq);
             String linha = lerArq.readLine();         
             while (linha != null) {
-                linhas.add(linha.replace(",", "").replace("$", "").replace("(", " ").replace(")", ""));
+                linhas.add(linha.replace(", ", " ").replace(",", " ").replace("$", "").replace("(", " ").replace(")", ""));
                 linha = lerArq.readLine(); 
             }
             arq.close();
